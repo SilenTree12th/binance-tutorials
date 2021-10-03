@@ -3,20 +3,20 @@ import config
 from binance.client import Client
 from binance.enums import *
 
-SOCKET = "wss://stream.binance.com:9443/ws/ethusdt@kline_1m"
+SOCKET = "wss://stream.binance.com:9443/ws/ethbtc@kline_4h"
 
 RSI_PERIOD = 14
 RSI_OVERBOUGHT = 70
 RSI_OVERSOLD = 30
-TRADE_SYMBOL = 'ETHUSD'
+TRADE_SYMBOL = 'ETHBTC'
 TRADE_QUANTITY = 0.05
 
 closes = []
 in_position = False
 
-client = Client(config.API_KEY, config.API_SECRET, tld='us')
+client = Client(config.API_KEY, config.API_SECRET, tld='com')
 
-def order(side, quantity, symbol,order_type=ORDER_TYPE_MARKET):
+def order(side, quantity, symbol,order_type=ORDER_TYPE_LIMIT):
     try:
         print("sending order")
         order = client.create_order(symbol=symbol, side=side, type=order_type, quantity=quantity)
@@ -64,7 +64,7 @@ def on_message(ws, message):
                 if in_position:
                     print("Overbought! Sell! Sell! Sell!")
                     # put binance sell logic here
-                    order_succeeded = order(SIDE_SELL, TRADE_QUANTITY, TRADE_SYMBOL)
+                    order_succeeded = client.create_margin_order(SIDE_SELL, TRADE_QUANTITY, TRADE_SYMBOL)
                     if order_succeeded:
                         in_position = False
                 else:
@@ -76,7 +76,7 @@ def on_message(ws, message):
                 else:
                     print("Oversold! Buy! Buy! Buy!")
                     # put binance buy order logic here
-                    order_succeeded = order(SIDE_BUY, TRADE_QUANTITY, TRADE_SYMBOL)
+                    order_succeeded = client.create_margin_order(SIDE_BUY, TRADE_QUANTITY, TRADE_SYMBOL)
                     if order_succeeded:
                         in_position = True
 
