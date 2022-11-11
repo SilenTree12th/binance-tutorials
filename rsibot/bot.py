@@ -3,13 +3,14 @@ import config
 from binance.client import Client
 from binance.enums import *
 
-SOCKET = "wss://stream.binance.com:9443/ws/ethbtc@kline_4h"
+SOCKET = "wss://stream.binance.com:9443/ws/btcusdt@kline_15m"
 
-RSI_PERIOD = 14
-RSI_OVERBOUGHT = 70
-RSI_OVERSOLD = 30
-TRADE_SYMBOL = 'ETHBTC'
-TRADE_QUANTITY = 0.05
+
+RSI_PERIOD = 16
+RSI_OVERBOUGHT = 80
+RSI_OVERSOLD = 20
+TRADE_SYMBOL = 'BTCUSDT'
+
 
 closes = []
 in_position = False
@@ -45,6 +46,7 @@ def on_message(ws, message):
 
     is_candle_closed = candle['x']
     close = candle['c']
+    TRADE_QUANTITY = 10/close
 
     if is_candle_closed:
         print("candle closed at {}".format(close))
