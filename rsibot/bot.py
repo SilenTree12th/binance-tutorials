@@ -7,13 +7,11 @@ SOCKET = "wss://stream.binance.com:9443/ws/btcusdt@kline_15m"
 
 
 RSI_PERIOD = 16
-RSI_OVERBOUGHT = 80
 RSI_OVERSOLD = 20
 TRADE_SYMBOL = 'BTCUSDT'
 
 
 closes = []
-in_position = False
 
 client = Client(config.API_KEY, config.API_SECRET, tld='com')
 
@@ -46,7 +44,7 @@ def on_message(ws, message):
 
     is_candle_closed = candle['x']
     close = candle['c']
-    TRADE_QUANTITY = 10/close
+    TRADE_QUANTITY = round(11/close,5)
 
     if is_candle_closed:
         print("candle closed at {}".format(close))
@@ -61,26 +59,13 @@ def on_message(ws, message):
             print(rsi)
             last_rsi = rsi[-1]
             print("the current rsi is {}".format(last_rsi))
-
-            if last_rsi > RSI_OVERBOUGHT:
-                if in_position:
-                    print("Overbought! Sell! Sell! Sell!")
-                    # put binance sell logic here
-                    order_succeeded = client.create_margin_order(SIDE_SELL, TRADE_QUANTITY, TRADE_SYMBOL)
-                    if order_succeeded:
-                        in_position = False
-                else:
-                    print("It is overbought, but we don't own any. Nothing to do.")
             
-            if last_rsi < RSI_OVERSOLD:
-                if in_position:
-                    print("It is oversold, but you already own it, nothing to do.")
-                else:
-                    print("Oversold! Buy! Buy! Buy!")
-                    # put binance buy order logic here
-                    order_succeeded = client.create_margin_order(SIDE_BUY, TRADE_QUANTITY, TRADE_SYMBOL)
-                    if order_succeeded:
-                        in_position = True
+            if last_rsi <= RSI_OVERSOLD:
+                print("Oversold! Buy! Buy! Buy!")
+                # put binance buy order logic here
+                order_succeeded = False
+                while not order_succeeded:
+                    order_succeeded = client.create_market_order(SIDE_BUY, TRADE_QUANTITY, TRADE_SYMBOL)
 
                 
 ws = websocket.WebSocketApp(SOCKET, on_open=on_open, on_close=on_close, on_message=on_message)
